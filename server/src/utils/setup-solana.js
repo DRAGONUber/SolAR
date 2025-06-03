@@ -22,7 +22,17 @@ function checkTestValidator() {
 
 // Check if Anchor program has been built
 function checkAnchorBuild() {
-  const targetDir = path.join(__dirname, '..', 'git-solana', 'target');
+  // The git-solana directory lives three levels up from this script
+  // (server/src/utils). Using fewer ".." would resolve to
+  // server/git-solana, which does not exist.
+  const targetDir = path.join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'git-solana',
+    'target'
+  );
   if (!fs.existsSync(targetDir)) {
     console.error('❌ Anchor build directory not found');
     console.log('Run the following commands:');
@@ -49,17 +59,19 @@ function checkAnchorBuild() {
 function deployProgram() {
   try {
     console.log('Deploying program to localnet...');
-    
+
     // Change to the git-solana directory
-    process.chdir(path.join(__dirname, '..', 'git-solana'));
-    
+    // The path is three levels up from this script (server/src/utils)
+    const originalDir = process.cwd();
+    process.chdir(path.join(__dirname, '..', '..', '..', 'git-solana'));
+
     // Deploy the program
     execSync('anchor deploy', { stdio: 'inherit' });
     
     console.log('✅ Program deployed successfully');
     
-    // Change back to the server directory
-    process.chdir(path.join(__dirname));
+    // Change back to the original directory (server root)
+    process.chdir(originalDir);
     
     return true;
   } catch (error) {

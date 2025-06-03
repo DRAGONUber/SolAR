@@ -12,18 +12,40 @@ const bs58 = require('bs58');
 // We'll use this to interact with the program if available
 let idl = null;
 const idlPaths = [
-  path.join(__dirname, '..', 'git-solana', 'target', 'idl', 'git_solana.json'),
-  path.join(__dirname, '..', '..', '..', 'git-solana', 'target', 'idl', 'git_solana.json'),
-  path.join(__dirname, '..', '..', '..', 'git-solana', 'target', 'types', 'git_solana.ts')
+  // git-solana directory lives three levels up from this file (server/src/utils)
+  path.join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'git-solana',
+    'target',
+    'idl',
+    'git_solana.json'
+  ),
+  path.join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'git-solana',
+    'target',
+    'types',
+    'git_solana.ts'
+  )
 ];
 
 for (const idlPath of idlPaths) {
   try {
     idl = JSON.parse(fs.readFileSync(idlPath, 'utf8'));
+    if (!idl.accounts) {
+      throw new Error('IDL missing accounts');
+    }
     console.log(`Loaded git-solana IDL from ${idlPath}`);
     break;
   } catch (err) {
-    // Continue to the next path
+    // Continue to the next path if file not found or invalid
+    console.warn(`Failed to load IDL from ${idlPath}: ${err.message}`);
   }
 }
 
